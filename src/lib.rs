@@ -36,6 +36,8 @@
 //! extern crate serde_derive;
 //!
 //! use neon::prelude::*;
+//! // For `or_throw()`
+//! use neon_serde::errors::ThrowExt;
 //!
 //! #[derive(Serialize, Debug, Deserialize)]
 //! struct AnObject {
@@ -47,7 +49,7 @@
 //! fn deserialize_something(mut cx: FunctionContext) -> JsResult<JsValue> {
 //!     let arg0 = cx.argument::<JsValue>(0)?;
 //!
-//!     let arg0_value :AnObject = neon_serde::from_value(&mut cx, arg0)?;
+//!     let arg0_value :AnObject = neon_serde::from_value(&mut cx, arg0).or_throw(&mut cx)?;
 //!     println!("{:?}", arg0_value);
 //!
 //!     Ok(JsUndefined::new().upcast())
@@ -60,7 +62,7 @@
 //!         c: "a string".into()
 //!     };
 //!
-//!     let js_value = neon_serde::to_value(&mut cx, &value)?;
+//!     let js_value = neon_serde::to_value(&mut cx, &value).or_throw(&mut cx)?;
 //!     Ok(js_value)
 //! }
 //!
@@ -90,6 +92,7 @@ pub use ser::to_value;
 #[cfg(test)]
 mod tests {
     use super::*;
+    use super::errors::ThrowExt;
     use neon::prelude::*;
 
     #[test]
@@ -97,10 +100,10 @@ mod tests {
         fn check<'j>(mut cx: FunctionContext<'j>) -> JsResult<'j, JsValue> {
             let result: () = {
                 let arg: Handle<'j, JsValue> = cx.argument::<JsValue>(0)?;
-                let () = from_value(&mut cx, arg)?;
+                let () = from_value(&mut cx, arg).or_throw(&mut cx)?;
                 ()
             };
-            let result: Handle<'j, JsValue> = to_value(&mut cx, &result)?;
+            let result: Handle<'j, JsValue> = to_value(&mut cx, &result).or_throw(&mut cx)?;
             Ok(result)
         }
 
@@ -112,10 +115,10 @@ mod tests {
         fn check<'j>(mut cx: FunctionContext<'j>) -> JsResult<'j, JsValue> {
             let result: () = {
                 let arg: Option<Handle<'j, JsValue>> = cx.argument_opt(0);
-                let () = from_value_opt(&mut cx, arg)?;
+                let () = from_value_opt(&mut cx, arg).or_throw(&mut cx)?;
                 ()
             };
-            let result: Handle<'j, JsValue> = to_value(&mut cx, &result)?;
+            let result: Handle<'j, JsValue> = to_value(&mut cx, &result).or_throw(&mut cx)?;
             Ok(result)
         }
 
